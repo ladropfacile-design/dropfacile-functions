@@ -6,14 +6,22 @@ exports.handler = async (event) => {
   const params = new URLSearchParams(event.body);
   const email = params.get('email');
   const product = params.get('product_name');
+  const shortId = params.get('short_product_id') || '';
 
   if (!email) {
     return { statusCode: 400, body: 'Missing email' };
   }
 
-  const cle = 'FACILI-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + 
+  let prefixe = 'FACILI-';
+  let nomProduit = 'FaciliFacture';
+  if (shortId === 'ckjxh' || shortId === 'buuzcm') {
+    prefixe = 'ANNIV-';
+    nomProduit = 'FaciliAnniv';
+  }
 
-Math.random().toString(36).substring(2, 6).toUpperCase();
+  const cle = prefixe + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' +
+  Math.random().toString(36).substring(2, 6).toUpperCase() + '-' +
+  Math.random().toString(36).substring(2, 6).toUpperCase();
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
@@ -30,7 +38,6 @@ Math.random().toString(36).substring(2, 6).toUpperCase();
   });
 
   await fetch('https://api.resend.com/emails', {
-
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +46,7 @@ Math.random().toString(36).substring(2, 6).toUpperCase();
     body: JSON.stringify({
       from: 'DropFacile <noreply@dropfacile.fr>',
       to: email,
-      subject: '🔑 Votre clé de licence FaciliFacture',
+      subject: `🔑 Votre clé de licence ${nomProduit}`,
       html: `<h2>Merci pour votre achat !</h2><p>Votre clé de licence personnelle :</p><h1 style="color:#30D5C8;letter-spacing:4px">${cle}</h1><p>Cette clé est personnelle et non-transférable.</p>`
     })
   });
